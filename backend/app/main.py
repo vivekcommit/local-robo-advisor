@@ -1,9 +1,9 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from contextlib import asynccontextmanager
 from pydantic import BaseModel, Field
 from typing import Optional
 from .db import init_db 
-from .services.portfolio import get_dashboard_snapshot, get_all_holdings, add_holding
+from .services.portfolio import get_dashboard_snapshot, get_all_holdings, add_holding, update_holding, delete_holding
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -23,6 +23,10 @@ class HoldingIn(BaseModel):
     price: float = Field(gt=0, example=250.0)
     cost_basis: float = Field(gt=0, example=220.0)
 
+class HoldingUpdate(BaseModel):
+    quantity: Optional[float] = Field(gt=0, example=10.0)
+    price: Optional[float] = Field(gt=0, example=250.0)
+    cost_basis: Optional[float] = Field(gt=0, example=220.0)
 
 @app.post("/api/holdings")
 def create_holding(holding: HoldingIn):
@@ -34,6 +38,24 @@ def create_holding(holding: HoldingIn):
     )
     return {"message": "Holding added successfully"}
 
+@app.put("/api/holdings/{holding_id}")
+def update_holding_endpoint(holding_id: int, holding: HoldingUpdate):
+    success = update_holding(
+        holding_id=holding_id,
+        quantity=holding.quantity,
+        price=holding.price,
+        cost_basis=holding.cost_basis
+    )
+    if not success:
+        raise HTTPException(status_code=404, detail="Holding not found")
+    return {"message": "Holding updated successfully"}
+
+@app.delete("/api/holdings/{holding_id}")
+def delete_holding_endpoint(holding_id: int):
+    success = delete_holding(holding_id=holding_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Holding not found")
+    return {"message": "Holding deleted successfully"}
 
 @app.get("/api/dashboard")
 def read_dashboard():

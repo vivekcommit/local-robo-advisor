@@ -45,6 +45,7 @@ def init_db():
             print("Error closing database connection.")
             pass
 
+# Temporary function to seed an example holding for testing/demo purposes
 def seed_example_holding():
     conn = get_connection()
     try:
