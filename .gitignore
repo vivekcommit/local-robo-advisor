@@ -1,0 +1,16 @@
+# Python venv and cache
+backend/.venv/
+__pycache__/
+*.pyc
+
+# Local data (never commit your real portfolio)
+user_data/
+*.db
+*.sqlite
+*.sqlite3
+.env
+
+# Frontend build artifacts (future)
+node_modules/
+dist/
+build/
