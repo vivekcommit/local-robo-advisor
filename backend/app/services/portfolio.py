@@ -1,18 +1,40 @@
-FAKE_HOLDINGS = [
-    {"symbol": "VTI", "quantity": 10, "price": 250.0},
-    {"symbol": "VXUS", "quantity": 15, "price": 60.0},
-    {"symbol": "BND", "quantity": 20, "price": 75.0},
-]
+from typing import List, Dict, Any
 
-def compute_total_value():
-    return sum(h["quantity"] * h["price"] for h in FAKE_HOLDINGS)
+from ..db import get_connection
 
-def get_dashboard_snapshot():
-    total_value = compute_total_value()
+
+def get_all_holdings() -> List[Dict[str, Any]]:
+    conn = get_connection()
+    try:
+        rows = conn.execute(
+            """
+            SELECT symbol, quantity, price, cost_basis
+            FROM holdings
+            ORDER BY symbol
+            """
+        ).fetchall()
+        return [
+            {
+                "symbol": row["symbol"],
+                "quantity": row["quantity"],
+                "price": row["price"],
+                "cost_basis": row["cost_basis"],
+            }
+            for row in rows
+        ]
+    finally:
+        conn.close()
+
+
+def compute_total_value(holdings: List[Dict[str, Any]]) -> float:
+    return sum(h["quantity"] * h["price"] for h in holdings)
+
+
+def get_dashboard_snapshot() -> Dict[str, Any]:
+    holdings = get_all_holdings()
+    total_value = compute_total_value(holdings)
+
     return {
         "total_value": total_value,
-        "holdings": FAKE_HOLDINGS,
+        "holdings": holdings,
     }
-
-def get_all_holdings():
-    return FAKE_HOLDINGS
