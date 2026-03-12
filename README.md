@@ -1,36 +1,50 @@
 # Local Robo Advisor
 
-A local, file-backed robo-advisor simulator that automates:
-- Tax-loss harvesting
-- Portfolio rebalancing
-- Dividend reinvestment
-- (Planned) Tax-efficient withdrawals
-- (Planned) Direct indexing [page:1]
+A local, file-backed robo-advisor backend built with FastAPI and SQLite.
 
-> Educational project. Not investment, tax, or legal advice.
+It tracks investment holdings in a local SQLite database, exposes a simple CRUD API for managing positions, and computes a basic portfolio dashboard. The long-term goal is to experiment with tax-loss harvesting and rebalancing logic similar to robo-advisors, but fully local and transparent.
 
-## Current Status
+---
 
-- FastAPI backend skeleton running at `/api/dashboard`
-- Fake in-memory holdings and total value
-- Next: local database + CSV import
-- Later: tax-loss harvesting, rebalancing, dividends, withdrawals [page:1]
+## Features
+
+- FastAPI backend with automatic interactive docs at `/docs` and `/redoc`.
+- SQLite database stored locally in `user_data/robo_advisor.db`.
+- CRUD API for holdings:
+  - `GET /api/holdings`
+  - `POST /api/holdings`
+  - `PUT /api/holdings/{holding_id}`
+  - `DELETE /api/holdings/{holding_id}`
+- Portfolio dashboard:
+  - `GET /api/dashboard` returns total portfolio value plus holdings detail.
+
+---
+
+## Tech Stack
+
+- Python 3.11
+- FastAPI
+- Uvicorn
+- SQLite (`sqlite3` standard library module)
+- VS Code for development
+
+---
 
 ## Project Structure
 
-- `backend/` – FastAPI app and business logic.
-- `frontend/` – Web UI (to be added).
-- `user_data/` – Your local DB and CSVs (gitignored).
-- `docs/` – Architecture and roadmap docs.
-
-## Quickstart (Backend)
-
-```bash
-cd backend
-python -m venv .venv
-.venv\Scripts\activate  # Windows
-pip install fastapi uvicorn[standard]
-uvicorn app.main:app --reload
-```
-
-Then visit `http://localhost:8000/api/dashboard` to see the fake data.
+```text
+local-robo-advisor/
+  backend/
+    app/
+      main.py          # FastAPI app, routes, lifespan startup
+      db.py            # SQLite connection + schema init
+      services/
+        __init__.py
+        portfolio.py   # Holdings + dashboard service functions
+    .venv/             # Local virtual environment (ignored by git)
+  docs/
+    ARCHITECTURE.md
+  user_data/
+    robo_advisor.db    # Local SQLite database (created at runtime)
+  README.md
+  .gitignore
