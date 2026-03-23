@@ -5,6 +5,18 @@ from typing import Optional
 from .db import init_db 
 from .services.portfolio import get_dashboard_snapshot, get_all_holdings, add_holding, update_holding, delete_holding
 
+from pathlib import Path
+from fastapi.responses import HTMLResponse
+
+# Serve the HTML frontend
+BASE_DIR = Path(__file__).resolve().parent[2]  # Go up two levels to get to the project root
+FRONTEND_DIR = BASE_DIR / "frontend"
+
+@app.get("/", response_class=HTMLResponse)
+def read_root():
+    index_path = FRONTEND_DIR/ "index.html"
+    return index_path.read_text(encoding="utf-8")
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup

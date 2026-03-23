@@ -57,16 +57,28 @@ def get_all_holdings() -> List[Dict[str, Any]]:
             ORDER BY symbol
             """
         ).fetchall()
-        return [
-            {
+
+        holdings: List[Dict[str, Any]] = []
+        for row in rows:
+            quantity = row["quantity"]
+            price = row["price"]
+            cost_basis = row["cost_basis"]
+
+            current_value = quantity * price
+            total_cost = quantity * cost_basis
+            unrealized_gain_loss = current_value - total_cost
+
+            holdings.append(
+                {
                 "id": row["id"],
                 "symbol": row["symbol"],
                 "quantity": row["quantity"],
                 "price": row["price"],
                 "cost_basis": row["cost_basis"],
+                "unrealized_gain_loss": unrealized_gain_loss
             }
-            for row in rows
-        ]
+        )
+        return holdings
     finally:
         conn.close()
 
@@ -74,12 +86,21 @@ def get_all_holdings() -> List[Dict[str, Any]]:
 def compute_total_value(holdings: List[Dict[str, Any]]) -> float:
     return sum(h["quantity"] * h["price"] for h in holdings)
 
+def compute_total_cost(holdings: List[Dict[str, Any]]) -> float:
+    return sum(h["quantity"] * h["cost_basis"] for h in holdings)
+
+def compute_total_unrealized_gain_loss(holdings: List[Dict[str, Any]]) -> float:
+    return sum(h["unrealized_gain_loss"] for h in holdings)
 
 def get_dashboard_snapshot() -> Dict[str, Any]:
     holdings = get_all_holdings()
     total_value = compute_total_value(holdings)
+    total_cost = compute_total_cost(holdings)
+    total_unrealized_gain_loss = compute_total_unrealized_gain_loss(holdings)
 
     return {
         "total_value": total_value,
+        "total_cost": total_cost,
+        "total_unrealized_gain_loss": total_unrealized_gain_loss,
         "holdings": holdings,
     }
