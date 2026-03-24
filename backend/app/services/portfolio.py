@@ -99,8 +99,11 @@ def get_dashboard_snapshot() -> Dict[str, Any]:
     total_unrealized_gain_loss = compute_total_unrealized_gain_loss(holdings)
 
     return {
+        "summary": {
         "total_value": total_value,
         "total_cost": total_cost,
         "total_unrealized_gain_loss": total_unrealized_gain_loss,
+        "positions_count": len(holdings),
+        },
         "holdings": holdings,
     }

@@ -1,20 +1,91 @@
-<script>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Portfolio Dashboard</title>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 2rem; }
+      h1 { margin-bottom: 0.5rem; }
+      .summary { margin-bottom: 1rem; }
+      table { border-collapse: collapse; width: 100%; max-width: 900px; }
+      th, td { border: 1px solid #ddd; padding: 0.5rem; text-align: right; }
+      th { background:#f3f3f3; }
+      td.symbol, th.symbol { text-align: left; }
+      .positive { color: darkgreen; }
+      .negative { color: darkred; }
+      button { margin-bottom: 1rem; padding: 0.4rem 0.8rem; }
+    </style>
+  </head>
+  <body>
+    <h1>Local Robo Advisor</h1>
+    <div class="summary">
+      <div><strong>Total value:</strong> <span id="total-value">-</span></div>
+      <div><strong>Total unrealized P&amp;L:</strong> <span id="total-pnl">-</span></div>
+    </div>
 
-</script>
-<table>
-    <tr>
-        <th>Symbol</th>
-        <th>Quantity</th>
-        <th>Price</th>
-        <th>Cost Basis</th>
-        <th>Unrealized Gain/Loss</th>
-    </tr>
-    <!-- Example row, replace with dynamic data -->
-    <tr>
-        <td>AAPL</td>
-        <td>10</td>
-        <td>$150.00</td>
-        <td>$120.00</td>
-        <td>$300.00</td>
-    </tr>
-</table>
+    <button id="refresh-btn">Refresh</button>
+
+    <table>
+      <thead>
+        <tr>
+          <th class="symbol">Symbol</th>
+          <th>Quantity</th>
+          <th>Price</th>
+          <th>Cost Basis</th>
+          <th>Unrealized P&amp;L</th>
+        </tr>
+      </thead>
+      <tbody id="holdings-table-body">
+        <!-- Holdings will be populated here -->
+      </tbody>
+    </table>
+
+    <script>
+      async function loadDashboard() {
+        try {
+          const response = await fetch('/api/dashboard');
+          if (!response.ok) {
+            throw new Error('Failed to fetch dashboard data: ' + response.status);
+          }
+          const data = await response.json();
+
+          const summary = data.summary || {};
+          const holdings = data.holdings || [];
+
+          // Update summary
+          const totalValueEl = document.getElementById('total-value');
+          const totalPnlEl = document.getElementById('total-pnl');
+
+          const totalValue = summary.total_value ?? 0;
+          const totalUnrealized = summary.total_unrealized_gain_loss ?? 0;
+
+          totalValueEl.textContent = '$' + totalValue.toFixed(2);
+          totalPnlEl.textContent = '$' + totalUnrealized.toFixed(2);
+          totalPnlEl.className = totalUnrealized >= 0 ? 'positive' : 'negative';
+
+          // Update holdings table
+          const tbody = document.getElementById('holdings-table-body');
+          tbody.innerHTML = '';
+          holdings.forEach(h => {
+            const tr = document.createElement('tr');
+            const pnlClass = h.unrealized_gain_loss >= 0 ? 'positive' : 'negative';
+            tr.innerHTML = `
+              <td class="symbol">${h.symbol}</td>
+              <td>${h.quantity}</td>
+              <td>${h.price}</td>
+              <td>${h.cost_basis}</td>
+              <td class="${pnlClass}">${h.unrealized_gain_loss.toFixed(2)}</td>
+            `;
+            tbody.appendChild(tr);
+          });
+        } catch (err) {
+          document.getElementById('total-value').textContent = 'Error';
+          document.getElementById('total-pnl').textContent = String(err);
+        }
+      }
+
+      document.getElementById('refresh-btn').addEventListener('click', loadDashboard);
+      loadDashboard();
+    </script>
+  </body>
+</html>
