@@ -28,8 +28,9 @@ def init_db():
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 symbol TEXT NOT NULL,
                 quantity REAL NOT NULL,
+                cost_basis REAL NOT NULL,
                 price REAL NOT NULL,
-                cost_basis REAL NOT NULL
+                asset_class TEXT NOT NULL DEFAULT 'US_Equity'
             )
             """
         )
@@ -51,10 +52,10 @@ def seed_example_holding():
     try:
         conn.execute(
             """
-            INSERT INTO holdings (symbol, quantity, price, cost_basis)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO holdings (symbol, quantity, price, cost_basis, asset_class)
+            VALUES (?, ?, ?, ?, ?)
             """,
-            ("VTI", 10.0, 250.0, 220.0),
+            ("VTI", 10.0, 250.0, 220.0, "US_Equity"),
         )
         conn.commit()
         print("Example holding seeded successfully.")

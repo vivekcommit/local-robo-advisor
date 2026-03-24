@@ -32,6 +32,7 @@
           <th>Quantity</th>
           <th>Price</th>
           <th>Cost Basis</th>
+          <th>Asset Class</th>
           <th>Unrealized P&amp;L</th>
         </tr>
       </thead>
@@ -74,6 +75,7 @@
               <td>${h.quantity}</td>
               <td>${h.price}</td>
               <td>${h.cost_basis}</td>
+              <td>${h.asset_class}</td>
               <td class="${pnlClass}">${h.unrealized_gain_loss.toFixed(2)}</td>
             `;
             tbody.appendChild(tr);

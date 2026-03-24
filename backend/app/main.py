@@ -35,12 +35,14 @@ class HoldingIn(BaseModel):
     quantity: float = Field(gt=0, example=10.0)
     price: float = Field(gt=0, example=250.0)
     cost_basis: float = Field(gt=0, example=220.0)
+    asset_class: str = Field(min_length=1, example="US_Equity")
 
 
 class HoldingUpdate(BaseModel):
     quantity: Optional[float] = Field(gt=0, example=10.0)
     price: Optional[float] = Field(gt=0, example=250.0)
     cost_basis: Optional[float] = Field(gt=0, example=220.0)
+    asset_class: Optional[str] = Field(min_length=1, example="US_Equity")
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -56,6 +58,7 @@ def create_holding(holding: HoldingIn):
         quantity=holding.quantity,
         price=holding.price,
         cost_basis=holding.cost_basis,
+        asset_class=holding.asset_class
     )
     return {"message": "Holding added successfully"}
 
@@ -67,6 +70,7 @@ def update_holding_endpoint(holding_id: int, holding: HoldingUpdate):
         quantity=holding.quantity,
         price=holding.price,
         cost_basis=holding.cost_basis,
+        asset_class=holding.asset_class
     )
     if not success:
         raise HTTPException(status_code=404, detail="Holding not found")

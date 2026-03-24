@@ -2,30 +2,30 @@ from typing import List, Dict, Any
 
 from ..db import get_connection
 
-def add_holding(symbol: str, quantity: float, price: float, cost_basis: float) -> None:
+def add_holding(symbol: str, quantity: float, price: float, cost_basis: float, asset_class: str) -> None:
     conn = get_connection()
     try:
         conn.execute(
             """
-            INSERT INTO holdings (symbol, quantity, price, cost_basis)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO holdings (symbol, quantity, price, cost_basis,asset_class)
+            VALUES (?, ?, ?, ?, ?)
             """,
-            (symbol.upper(), quantity, price, cost_basis),
+            (symbol.upper(), quantity, price, cost_basis, asset_class),
         )
         conn.commit()
     finally:
         conn.close()
 
-def update_holding(holding_id: int, quantity: float, price: float, cost_basis: float) -> bool:
+def update_holding(holding_id: int, quantity: float, price: float, cost_basis: float, asset_class: str) -> bool:
     conn = get_connection()
     try:
         cursor=conn.execute(
             """
             UPDATE holdings
-            SET quantity = ?, price = ?, cost_basis = ?
+            SET quantity = ?, price = ?, cost_basis = ?, asset_class = ?
             WHERE id = ?
             """,
-            (quantity, price, cost_basis, holding_id),
+            (quantity, price, cost_basis, holding_id, asset_class),
         )
         conn.commit()
         return cursor.rowcount > 0
@@ -52,7 +52,7 @@ def get_all_holdings() -> List[Dict[str, Any]]:
     try:
         rows = conn.execute(
             """
-            SELECT id,symbol, quantity, price, cost_basis
+            SELECT id,symbol, quantity, price, cost_basis, asset_class
             FROM holdings
             ORDER BY symbol
             """
@@ -75,6 +75,7 @@ def get_all_holdings() -> List[Dict[str, Any]]:
                 "quantity": row["quantity"],
                 "price": row["price"],
                 "cost_basis": row["cost_basis"],
+                "asset_class": row["asset_class"],
                 "unrealized_gain_loss": unrealized_gain_loss
             }
         )
