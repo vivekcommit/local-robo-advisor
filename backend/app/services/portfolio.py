@@ -108,3 +108,40 @@ def get_dashboard_snapshot() -> Dict[str, Any]:
         },
         "holdings": holdings,
     }
+
+def get_tax_loss_candidates(
+    min_loss_dollars: float = 100.0,
+    min_loss_pct: float = 0.05,
+):
+    holdings = get_all_holdings()
+    candidates = []
+
+    for h in holdings:
+        # derive values from fields that are guaranteed to exist
+        invested = h["quantity"] * h["cost_basis"]
+        current_value = h["quantity"] * h["price"]
+        loss = current_value - invested
+
+        if current_value <= 0 or invested <= 0:
+            continue
+
+        loss_pct = loss / invested
+
+        if loss < -min_loss_dollars and loss_pct < -min_loss_pct:
+            candidates.append(
+                {
+                    "id": h["id"],
+                    "symbol": h["symbol"],
+                    "asset_class": h["asset_class"],
+                    "current_value": current_value,
+                    "unrealized_pnl": loss,
+                    "unrealized_pnl_pct": loss_pct,
+                }
+            )
+
+    return {
+        "count": len(candidates),
+        "min_loss_dollars": min_loss_dollars,
+        "min_loss_pct": min_loss_pct,
+        "candidates": candidates,
+    }

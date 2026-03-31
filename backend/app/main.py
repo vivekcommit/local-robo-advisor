@@ -7,7 +7,7 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
 from .db import init_db
-from .services.portfolio import get_dashboard_snapshot, get_all_holdings, add_holding, update_holding, delete_holding
+from .services.portfolio import get_dashboard_snapshot, get_all_holdings, add_holding, update_holding, delete_holding, get_tax_loss_candidates
 
 # Paths for serving the frontend
 BASE_DIR = Path(__file__).resolve().parents[2]  # project root
@@ -97,3 +97,18 @@ def read_dashboard():
 @app.get("/api/holdings")
 def read_holdings():
     return get_all_holdings()
+
+
+@app.get("/api/tax-loss/candidates")
+def read_tax_loss_candidates(
+    min_loss_dollars: float = 100.0,
+    min_loss_pct: float = 0.05,
+):
+    """
+    Read-only: list positions with significant unrealized losses.
+    Does NOT execute trades or consider wash-sale rules.
+    """
+    return get_tax_loss_candidates(
+        min_loss_dollars=min_loss_dollars,
+        min_loss_pct=min_loss_pct
+    )

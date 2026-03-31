@@ -17,6 +17,10 @@
     </style>
   </head>
   <body>
+
+    <h2>Tax-Loss Candidates</h2>
+    <button id="refresh-tax-loss">Refresh Tax-Loss Candidates</button>
+    <ul id="tax-loss-list"></ul>
     <h1>Local Robo Advisor</h1>
     <div class="summary">
       <div><strong>Total value:</strong> <span id="total-value">-</span></div>
@@ -88,6 +92,25 @@
 
       document.getElementById('refresh-btn').addEventListener('click', loadDashboard);
       loadDashboard();
+
+    async function loadTaxLossCandidates() {
+    const res = await fetch('/api/tax-loss/candidates');
+    const data = await res.json();
+
+    const list = document.getElementById('tax-loss-list');
+    list.innerHTML = '';
+
+    data.candidates.forEach(c => {
+    const li = document.createElement('li');
+    const pct = (c.unrealized_pnl_pct * 100).toFixed(2);
+    li.textContent = `${c.symbol} (${c.asset_class}): value ${c.current_value.toFixed(2)}, loss ${c.unrealized_pnl.toFixed(2)} (${pct}%)`;
+    list.appendChild(li);
+    });
+    }
+
+    document
+    .getElementById('refresh-tax-loss')
+    .addEventListener('click', loadTaxLossCandidates);
     </script>
   </body>
 </html>
